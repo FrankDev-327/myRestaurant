@@ -10,5 +10,4 @@ socket.js
 Procfile
 
 #docker's files
-Dockerfile
 *.yml
