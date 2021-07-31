@@ -9,7 +9,8 @@ module.exports = {
             }
             conn.createChannel(function (err, channel) {
                 if (err != null) {
-                    bail(err);
+                    console.error(err);
+                    process.exit(1);
                 }
                 objData = JSON.stringify(objData);
                 channel.assertQueue(set.memorydb);
@@ -20,8 +21,3 @@ module.exports = {
         });
     }
 }
-
-function bail(err) {
-    console.error(err);
-    process.exit(1);
- }
