@@ -1,79 +1,75 @@
 'use strict';
 
 const models = require('../../models');
-const amq = require('amqplib/callback_api');
-const set = require('../../set-ups/setting');
+const { sendQueue } = require('../../utils/sending_queues');
+const { buildCreateAttending } = require('../../utils/buildin_objects')
 
 module.exports = {
    createAttending: async (req, res) => {
       try {
-         var params = req.body;
+         const params = req.body;
          params.waiterId = req.users.id;
-         var objAtt = await buildCreateAttending(params);
-         var dataInfo = await models.AttendingWaiters.create(objAtt);;
+         const objAtt = await buildCreateAttending(params);
+         const dataInfo = await models.AttendingWaiters.create(objAtt);;
 
          if (!dataInfo) {
             return res.status(202).json({
                code: 202,
-               msg: 'Hubo un error al ingresar los datos. Intente de nuevo.'
-            });
-         } else {
-            var data = {
-               orders: dataInfo.orders,
-               tableId: dataInfo.tableId,
-               dateAttending: dataInfo.dateAttending,
-               actualTableAttending: dataInfo.actualTableAttending,
-            }
-            await sendQueue(data);
-            return res.status(200).json({
-               dataInfo,
-               code: 200,
-               msg: 'Mesa ocupada.'
+               msg: 'There was an error entering the data. Try again.'
             });
          }
 
+         const data = {
+            orders: dataInfo.orders,
+            tableId: dataInfo.tableId,
+            dateAttending: dataInfo.dateAttending,
+            actualTableAttending: dataInfo.actualTableAttending,
+         }
+         await sendQueue(data);
+         return res.status(200).json({
+            dataInfo,
+            code: 200,
+            msg: 'Busy table.'
+         });
+
       } catch (error) {
-         console.log('createAttending');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    listAttendByWaiter: async (req, res) => {
       try {
-         var idAtt = {
-            where: {
-               waiterId: req.params.waiterId
-            }
-         };
-         var dataInfo = await models.AttendingWaiters.findAll(idAtt);
+         const waiterId = req.params.waiterId
+         const setwhere = { where: { waiterId: waiterId } };
+         const dataInfo = await models.AttendingWaiters.findAll(setwhere);
 
-         if (!dataInfo) {
+         if (dataInfo.length <= 0) {
             return res.status(202).json({
                code: 202,
-               msg: 'No ha atendido a nadie.'
+               msg: 'Has not attended anyone.'
             });
          }
+
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Sus atenciones.'
+            msg: 'Your attentions.'
          });
 
       } catch (error) {
-         console.log('listAttendByWaiter');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    changesStatusAttending: async (req, res) => {
       try {
-         var setWhere = {
+         const setWhere = {
             plain: true,
             where: {
                id: req.params.id
@@ -81,137 +77,91 @@ module.exports = {
             returning: true,
             paranoid: true
          };
-         var stmt = {
+         const stmt = {
             statusAttending: false,
             rates: req.body.rates
          };
-         var dataInfo = await models.AttendingWaiters.update(stmt, setWhere);
+         const dataInfo = await models.AttendingWaiters.update(stmt, setWhere);
 
          if (!dataInfo) {
             return res.status(202).json({
                code: 202,
-               msg: 'No se cambió el estado. Intente de nuevo.'
+               msg: 'The status was not changed. Try again.'
             });
          }
+
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Servicio hecho.'
+            msg: 'Service done.'
          });
+
       } catch (error) {
-         console.log('listAttendByWaiter');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    paymentConsume: async (req, res) => {
       try {
-         var tableId = req.params.tableId;
-         var setWhere = {
-            where: {
-               tableId: tableId
-            }
-         };
-         var dataInfo = await models.AttendingWaiters.findOne(setWhere);
+         const tableId = req.params.tableId;
+         const setWhere = { where: { tableId: tableId } };
+         const dataInfo = await models.AttendingWaiters.findOne(setWhere);
 
          if (!dataInfo) {
             return res.status(202).json({
                code: 202,
-               msg: 'En esta mesa no se ha pagado.'
+               msg: 'This table has not been paid.'
             });
          }
+
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'En esta mesa se pagó.'
+            msg: 'At this table it was paid.'
          });
 
       } catch (error) {
-         console.log('paymentConsume');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    changeStateTable: async (req, res) => {
       try {
-         var setWhere = {
-            where: {
-               statusAttending: true
-            },
+         const tablesId = [];
+         const setWhere = {
+            where: { statusAttending: true },
             attributes: ['id', 'statusAttending']
          };
 
-         var dataInfo = await models.AttendingWaiters.findAll(setWhere);
-         dataInfo.map(function (value, index) {
-            let status = dataInfo[index].statusAttending
-            if (status !== true) {
-               return;
-            } else {
-               let _id = dataInfo[index].id;
-               models.AttendingWaiters.update({
-                  statusAttending: false
-               }, {
-                  where: {
-                     id: _id
-                  }
-               });
-            }
+         const dataInfo = await models.AttendingWaiters.findAll(setWhere);
+         if (dataInfo.length <= 0) {
+            return res.status(200).json({
+               code: 200,
+               msg: 'The tables are still occupied.'
+            });
+         }
+
+         (dataInfo && dataInfo.map(value => tablesId.push(value.id)));
+         await models.AttendingWaiters.update({ statusAttending: false },
+            { where: { id: tablesId } });
+
+         return res.status(200).json({
+            code: 200,
+            msg: 'All tables were updated.'
          });
 
       } catch (error) {
-         console.log('changeStateTable');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
-}
-
-async function sendQueue(objData) {
-   amq.connect(set.rabbit, function (err, conn) {
-      if (err != null) {
-         bail(err);
-      }
-      conn.createChannel(function (err, channel) {
-         if (err != null) {
-            bail(err);
-         }
-         objData = JSON.stringify(objData);
-         channel.assertQueue(set.memorydb);
-         channel.sendToQueue(set.memorydb, Buffer.from(objData), {
-            persistent: true
-         });
-      });
-   });
-}
-
-async function buildCreateAttending(params) {
-   return {
-      waiterId: params.waiterId, //debería ser por medio del payload
-      actualTableAttending: params.actualTableAttending,
-      prices: params.prices,
-      orders: params.orders,
-      waiterId: params.waiterId,
-      tableId: params.tableId,
-      dateAttending: await setHour(),
-      statusAttending: true
-   }
-}
-
-async function setHour() {
-   var date = new Date();
-   return date.setHours(date.getHours() - 5);
-}
-
-function bail(err) {
-   console.error(err);
-   process.exit(1);
 }

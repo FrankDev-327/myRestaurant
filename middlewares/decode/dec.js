@@ -1,36 +1,35 @@
 'use strict';
 
-var moment = require('moment');
+const moment = require('moment');
 const models = require('../../models');
-var jwt = require('jwt-simple');
+const jwt = require('jwt-simple');
 const models = require('../../models');
 const objConf = require('../../set-ups/setting');
 
 exports.authMethod = async (req, res, next) => {
-   if (!req.headers.authorization)
-      return res.status(403).json({
-         message: 'La peticion no tiene la cabecera de autenticacion'
-      });
-
-   /*var t = req.headers.authorization.token();
-   console.log(t);*/
-
-   var token = req.headers.authorization.replace(/['"]+/g, '');
    try {
-      var payload = jwt.decode(token, objConf.secret, true);
-      if (payload.exp <= moment().unix) {
-         var objBkl = {
-            unableToken: token
-         }
-         var findToken = await models.BlackListToken.findAll(objBkl);
-         if (!findToken) {
-            await models.BlackListToken.create(objBkl);
-         }
+      if (!req.headers.authorization) {
          return res.status(403).json({
-            message: 'El token ha expirado'
+            message: 'La peticion no tiene la cabecera de autenticacion'
          });
       }
-      var auxObj = {
+
+      const token = req.headers.authorization.replace(/['"]+/g, '');
+      const payload = jwt.decode(token, objConf.secret, true);
+
+      if (payload.exp <= moment().unix) {
+         return res.status(403).json({
+            message: 'The token has expired'
+         });
+      }
+
+      const objBkl = { unableToken: token };
+      const findToken = await models.BlackListToken.findAll(objBkl);
+      if (!findToken) {
+         await models.BlackListToken.create(objBkl);
+      }
+      
+      const auxObj = {
          idWaiter: payload.id,
          entryWork: new Date(),
          nickName: payload.genericNickName
@@ -40,10 +39,9 @@ exports.authMethod = async (req, res, next) => {
    } catch (error) {
       console.log(error)
       return res.status(403).json({
-         message: 'token no valido'
+         message: 'invalid token'
       });
    }
-
    req.users = payload;
    next();
 }

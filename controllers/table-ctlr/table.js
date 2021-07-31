@@ -4,48 +4,45 @@ const models = require('../../models');
 module.exports = {
    createTable: async (req, res) => {
       try {
-         var params = req.body;
-         var dataInfo = await models.Tables.create({
-            tableSitting:params.tableSitting
-         });
+         const params = req.body;
+         const dataInfo = await models.Tables.create({ ...params });
 
          if (!dataInfo) {
             return res.status(202).json({
                code: 202,
-               msg: 'No se pudo procesar el ingreso. Intenet de nuevo.'
+               msg: 'The check-in could not be processed. Internet again.'
             });
          }
 
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: '¡Mesa creada!'
+            msg: 'Table created!'
          });
 
       } catch (error) {
-         console.log('createTable');
          console.log(error)
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    listTable: async (req, res) => {
       try {
-         var dataInfo = await models.Tables.findAll();
+         const dataInfo = await models.Tables.findAll();
 
-         if (!dataInfo) {
+         if (dataInfo.length <= 0) {
             return res.status(202).json({
                code: 202,
-               msg: 'Al parecer, no registró mesas.'
+               msg: 'Apparently he did not search tables.'
             });
          }
 
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: '¡Mesas disponibles!'
+            msg: 'Tables available!'
          });
 
       } catch (error) {
@@ -53,7 +50,7 @@ module.exports = {
          console.log(error)
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    }

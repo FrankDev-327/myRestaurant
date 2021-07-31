@@ -1,11 +1,11 @@
 'use strict';
 
-var jwt = require('jwt-simple');
+const jwt = require('jwt-simple');
 const moment = require('moment');
 const objConf = require('../../set-ups/setting');
 
-exports.ecodeObject = function (usrObj) {
-    var payload = {
+exports.ecodeObject = async (usrObj) {
+    const payload = {
        id:usrObj.id,
        firstName:usrObj.name,
        genericNickName: objConf.genericNickName,
@@ -15,6 +15,6 @@ exports.ecodeObject = function (usrObj) {
        iat: moment().unix(),
        exp: moment().add(5, 'minutes').unix
     }
-    var hash = jwt.encode(payload, objConf.secret);
+    const hash = jwt.encode(payload, objConf.secret);
     return hash;
  }

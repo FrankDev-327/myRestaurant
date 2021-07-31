@@ -5,84 +5,77 @@ const models = require('../../models');
 module.exports = {
    createCategory: async (req, res) => {
       try {
-         var params = req.body;
-         var dataInfo = await models.Categories.create({
-            nameCategory: params.nameCategory
-         });
+         const params = req.body;
+         const dataInfo = await models.Categories.create({ ...params });
 
          if (!dataInfo) {
             return res.status(202).json({
                code: 202,
-               msg: 'Hubo un error al ingresar los datos. Intente de nuevo.'
+               msg: 'There was an error entering the data. Try again.'
             });
          }
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Categoría agregada.'
+            msg: 'Added Category.'
          });
 
       } catch (error) {
-         console.log('createCategory');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    listCategories: async (req, res) => {
       try {
-         var dataInfo = await models.Categories.findAll();
-         if (!dataInfo) {
+         const dataInfo = await models.Categories.findAll();
+         if (dataInfo.length <= 0) {
             return res.status(403).json({
                code: 403,
-               msg: 'Hubo un error al listar los datos. Intente de nuevo.'
+               msg: 'There was an error listing the data. Try again.'
             });
          }
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Listado de las categorías.'
+            msg: 'List of categories.'
          });
 
       } catch (error) {
-         console.log('listCategories');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    changesCatergoryShow: async (req, res) => {
       try {
-         var stmt = {
-            show: false
-         };
-         var setData = {
-            plain:true,
+         const stmt = { show: false };
+         const setData = {
+            plain: true,
             where: {
                id: req.params.id
             },
-            returning:true
+            returning: true
          };
-         var dataInfo = await models.Categories.update(stmt, setData);
+         const dataInfo = await models.Categories.update(stmt, setData);
 
          if (!dataInfo) {
             return res.status(403).json({
                code: 403,
-               msg: 'Esa categoría no está registrada.'
+               msg: 'That category is not registered.'
             });
          }
+         
          return res.status(200).json({
             code: 200,
-            msg: 'Cambio de estado para no mostrar la categoría.'
+            msg: 'Status change to not show the category.'
          });
 
-
       } catch (error) {
-         console.log('changesCatShow');
          console.log(error);
          return res.status(500).json({
             code: 500,

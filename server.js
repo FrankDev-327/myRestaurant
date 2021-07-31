@@ -46,7 +46,7 @@ const {
     rAdmin
 } = require('./routes/index');
 
-/* Esto debe configurarse mejor */
+/* It must be improved*/
 server.use((req, res, next) => {
     var origin = req.headers.origin
     if (arrAccess.indexOf(origin) == -1) {

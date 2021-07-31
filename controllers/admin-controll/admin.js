@@ -1,169 +1,140 @@
 'use strict';
 
 const models = require('../../models');
-const {
-   encode
-} = require('../../middlewares/index')
-const bcrypt = require('bcrypt');
-const getSalt = 10;
+const { hashingPassword, validatePassword } = require('../../utils/my_bcrypt')
+const { encode } = require('../../middlewares/index')
 
 module.exports = {
    createAdministrator: async (req, res) => {
       try {
-         var params = req.body;
-         var objAdm = {
-            firstName: params.firstName,
-            lastName: params.lastName,
-            nickName: params.nickName,
-            email: params.email,
-            password: await bcrypt.hash(params.password, getSalt),
-            cellphone: params.cellphone,
-            profile: params.profile
-         }
-         var dataInfo = await models.Administrator.create(objAdm);
+         const params = req.body;
+         const hassPass = await hashingPassword(params.password);
+         var dataInfo = await models.Administrator.create({ ...params, password: hassPass });
 
          if (!dataInfo) {
             return res.status(202).json({
                code: 202,
-               msg: 'Hubo un error al ingresar los datos. Intente de nuevo.'
+               msg: 'There was a error. Try again.'
             });
          }
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Personal creado.'
+            msg: 'Personal was created successful.'
          });
 
       } catch (error) {
-         console.log('createAdministrator');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'It seems the service is not working well.'
          });
       }
    },
    loginAdministrator: async (req, res) => {
       try {
-         var params = req.body;
-         var pass = params.password;
-         var email = params.email;
-         var setWhere = {
-            where: {
-               email: email
-            }
-         };
-         var infoAdmin = await models.Administrator.findAll(setWhere);
+         const params = req.body;
+         const { password, email } = params;
+         const setWhere = { where: { email: email } };
+         const infoAdmin = await models.Administrator.findAll(setWhere);
+
          if (!infoAdmin) {
             return res.status(404).json({
                code: 404,
-               msg: 'Este correo no está registrado. Pruebe con otro.'
+               msg: 'Email or password are incorrect.'
             });
-         } else {
-            var _pass = infoAdmin.password;
-            var checkPass = await bcrypt.compare(pass, _pass);
-            if (!checkPass) {
-               return res.status(404).json({
-                  code: 404,
-                  msg: 'Esta contraseña es invalida.'
-               });
-            } else {
-               var data = infoAdmin;
-               var nick = infoAdmin.nickName;
-               infoAdmin.genericNickName = nick;
-               var token = encode(infoAdmin);
-               return res.status(200).json({
-                  data,
-                  code: 200,
-                  token: token,
-                  msg: '¡Ha iniciado sesión correctamente!'
-               });
-            }
          }
+
+         const _pass = infoAdmin.password;
+         const checkPass = await validatePassword(password, _pass);
+         if (!checkPass) {
+            return res.status(404).json({
+               code: 404,
+               msg: 'Email or password are incorrect.'
+            });
+         }
+
+         const data = infoAdmin;
+         const nick = infoAdmin.nickName;
+         infoAdmin.genericNickName = nick;
+         const token = encode(infoAdmin);
+
+         return res.status(200).json({
+            data,
+            code: 200,
+            token: token,
+            msg: 'Login success.'
+         });
+
       } catch (error) {
-         console.log('loginAdministrator');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    updateAdministrator: async (req, res) => {
       try {
-         var idAdm = req.params.id;
-         var setWhere = {
+         const params = req.body;
+         const idAdm = req.params.id;
+         const setWhere = {
             plain: true,
             where: {
                id: idAdm
             },
             returning: true
          };
-         var objAdm = {
-            firstName: params.firstName,
-            lastName: params.lastName,
-            nickName: params.nickName,
-            email: params.email,
-            password: await bcrypt.hash(params.password, getSalt),
-            cellphone: params.cellphone,
-            profile: params.profile
-         }
-         var dataInfo = await models.Administrator.update(objAdm, setWhere);
+         const pass = await hashingPassword(params.password)
+         var dataInfo = await models.Administrator.update({ ...params, password: pass }, setWhere);
          if (!dataInfo) {
             return res.status(202).json({
                code: 202,
-               msg: 'Hubo un error en actualizar los datos. Intente de nuevo.'
+               msg: 'There was an error updating the data. Try again.'
             });
          }
+
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Personal actualizado.'
+            msg: 'Updated staff.'
          });
 
       } catch (error) {
-         console.log('updateAdministrator');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    listAdministrator: async (req, res) => {
       try {
          var dataInfo;
-         var setBySearch = req.params.search;
-         
-         if (!setBySearch) {
-            dataInfo = await models.Administrator.findAll();
-         } else {
-            var setWhere = {
-               where: {
-                  profile: setBySearch
-               }
-            };
-            dataInfo = await models.Administrator.findAll(setWhere);
-         }
+         const setBySearch = req.params.search;
 
-         if (!dataInfo) {
+         dataInfo = (!setBySearch) ? await models.Administrator.findAll() :
+            await models.Administrator.findAll({ where: { profile: setBySearch } });
+
+
+         if (dataInfo.length <= 0) {
             return res.status(202).json({
                code: 202,
-               msg: 'Hubo un error en actualizar los datos. Intente de nuevo.'
+               msg: 'There was an error updating the data. Try again.'
             });
          }
+
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Personal actualizado.'
+            msg: 'List of staff.'
          });
 
       } catch (error) {
-         console.log('listAdministrator');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    }

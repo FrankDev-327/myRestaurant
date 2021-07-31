@@ -6,165 +6,140 @@ var path = require('path');
 module.exports = {
    createMenues: async (req, res) => {
       try {
-         var params = req.body;
-         var objMn = {
-            category: params.category,
-            nameMenu: params.nameMenu,
-            priceMenu: params.priceMenu,
-            imageMenu:params.imageMenu,
-            ingredients: params.ingredients,
-         }
-
-         var dataInfo = await models.Menues.create(objMn);
+         const params = req.body;
+         const dataInfo = await models.Menues.create({ ...params });
 
          if (!dataInfo) {
             return res.status(202).json({
                code: 202,
-               msg: 'No se pudo completar el registro. Intente nuevamente.'
+               msg: 'Registration could not be completed. Try again.'
             });
          }
+
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Menu agregado con éxito.'
+            msg: 'Menu added successfully.'
          });
 
       } catch (error) {
-         console.log('createMenues');
          console.log(params);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    listMenuByCategory: async (req, res) => {
       try {
-         var idCat = {
-            where: {
-               category: req.params.idCat
-            }
-         };
-         var dataInfo = await models.Menues.findAll(idCat);
+         const query = { where: { category: req.params.idCat } };
+         const dataInfo = await models.Menues.findAll(query);
 
-         if (!dataInfo || dataInfo.length <= 0) {
+         if (dataInfo.length <= 0) {
             return res.status(404).json({
                code: 404,
-               msg: 'No hay menues con esa categoría.'
+               msg: 'There are no menus with that category.'
             });
          }
+
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Menu por su categoría.'
+            msg: 'Menu for its category.'
          });
 
       } catch (error) {
-         console.log('listByCategory');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    editMenue: async (req, res) => {
       try {
-         var params = req.body;
-         var idMenu = {
+         const params = req.body;
+         const idMenu = {
             plain: true,
             where: {
                id: req.params.id
             },
             returning: true
          };
-
-         var objMn = {
-            category: params.category,
-            nameMenu: params.nameMenu,
-            imageMenu:params.imageMenu,
-            priceMenu: params.priceMenu,
-            ingredients: params.ingredients,
-         }
-         var dataInfo = await models.Menues.update(objMn, idMenu);
+         const dataInfo = await models.Menues.update({ ...params }, idMenu);
 
          if (!dataInfo) {
             return res.status(404).json({
                code: 404,
-               msg: 'No hay menues con esa categoría.'
+               msg: 'There are no menus with that category.'
             });
          }
+
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Menu por su categoría.'
+            msg: 'Menu for its category.'
          });
 
       } catch (error) {
-         console.log('editMenue');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    deleteMenu: async (req, res) => {
       try {
-         var idMenu = {
-            where: {
-               id: req.params.id
-            },
-            benchmark: true
+         const setWhere = {
+            benchmark: true,
+            where: { id: req.params.id }
          };
-         var dataInfo = await models.Menues.destroy(idMenu);
+         const dataInfo = await models.Menues.destroy(setWhere);
 
          if (dataInfo <= 0) {
             return res.status(404).json({
                code: 404,
-               msg: 'No existe tal menú con ese identidicador.'
+               msg: 'There is no such menu with that identifier.'
             });
          }
+
          return res.status(200).json({
             code: 200,
-            msg: 'Menu eliminado con éxito.'
+            msg: 'Menu removed successfully.'
          });
 
       } catch (error) {
-         console.log('deleteMenu');
          console.log(error)
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    viewDetailMenu: async (req, res) => {
       try {
-         var idMenu = {
-            where: {
-               id: req.params.id
-            }
-         };
-         var dataInfo = await models.Menues.findAll(idMenu)
+         const setWhere = { where: { id: req.params.id } };
+         var dataInfo = await models.Menues.findOne(setWhere);
+
          if (!dataInfo) {
             return res.status(404).json({
                code: 404,
-               msg: 'Este menú no existe.'
+               msg: 'This menu does not exist.'
             });
          }
+
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Detalles del menú.'
+            msg: 'Menu details.'
          });
 
       } catch (error) {
-         console.log('viewDetailMenu');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },

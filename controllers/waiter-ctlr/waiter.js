@@ -1,198 +1,161 @@
 'use strict';
 
 const models = require('../../models');
-const saltRounds = 10;
-var path = require('path');
-const bcrypt = require('bcrypt');
-const {
-   encode
-} = require('../../middlewares/index')
+const { encode } = require('../../middlewares/index');
+const { validatePassword, hashingPassword } = require('../../utils/my_bcrypt');
+const { toDoNewWaiter } = require('../../utils/buildin_objects');
 
 module.exports = {
    createWaiter: async (req, res) => {
       try {
-         var params = req.body;
-         var infoWaiter = await toDoNewWaiter(params);
-         var dataInfo = await models.Waiters.create(infoWaiter);
+         const params = req.body;
+         const infoWaiter = await toDoNewWaiter(params);
+         const dataInfo = await models.Waiters.create(infoWaiter);
 
          if (!dataInfo) {
             return res.status(202).json({
                code: 202,
-               msg: 'No se pudo procesar el ingreso. Intenet de nuevo.'
+               msg: 'The check-in could not be processed. Internet again.'
             });
          }
 
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: '¡Se ha creado un nuevo empleado!'
+            msg: 'A new employee has been created!!'
          });
 
       } catch (error) {
-         console.log('createWaiter')
          console.log(error)
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
 
       }
    },
    listAllWaiter: async (req, res) => {
       try {
-         var dataInfo = await models.Waiters.findAll();
-
-         if (!dataInfo) {
+         const dataInfo = await models.Waiters.findAll();
+         if (dataInfo.length <= 0) {
             return res.status(404).json({
                code: 404,
-               msg: 'No ha regitstrado a un mesero.'
+               msg: 'You have not registered a waiter.'
             });
          }
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Listado de todos los meseros'
+            msg: 'List of all waiters'
          });
 
       } catch (error) {
-         console.log('listAllWaiter')
          console.log(error)
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    viewWaiterDetail: async (req, res) => {
       try {
-         var idWtr = {
-            where: {
-               id: req.params.id
-            }
-         };
-         var dataInfo = await models.Waiters.findAll(idWtr);
-         if (!dataInfo) {
+         const setWhere = { where: { id: req.params.id } };
+         const dataInfo = await models.Waiters.findAll(setWhere);
+
+         if (dataInfo.length <= 0) {
             return res.status(404).json({
                code: 404,
-               msg: 'Esa persona no existe en sus registros.'
+               msg: 'That person does not exist in your records.'
             });
          }
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Información del mesero.'
+            msg: 'Waiter Information.'
          });
 
       } catch (error) {
-         console.log('viewWaiterDetail')
          console.log(error)
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    accessWaiter: async (req, res) => { //Considerar una Google para acceder
       try {
-         var waiterImage = req.body.waiterName;
-         var waiterName = {
-            where: {
-               waiterName: waiterImage
-            }
-         };
-         var pass = req.body.password;
-         var infoWaiter = await models.Waiters.findAll(waiterName);
+         const waiterImage = req.body.waiterName;
+         const setWhere = { where: { waiterName: waiterImage } };
+         const pass = req.body.password;
+         const infoWaiter = await models.Waiters.findAll(setWhere);
 
-         if (infoWaiter == null || infoWaiter.lenght <= 0) {
+         if (infoWaiter.lenght <= 0) {
             return res.status(404).json({
                code: 404,
-               msg: 'Este nickname no está registrado.'
+               msg: 'Bad nickname or password.'
             });
-         } else {
-            var validPass = await bcrypt.compare(pass, infoWaiter.password);
-            if (!validPass) {
-               return res.status(404).json({
-                  code: 404,
-                  msg: 'Contraseña incorrecta.'
-               });
-            } else {
-               var data = infoWaiter;
-               var nick = infoWaiter.waiterName;
-               infoWaiter.genericNickName = nick;
-               var token = encode(infoWaiter);
-               return res.status(200).json({
-                  data,
-                  code: 200,
-                  token:token,
-                  msg: '¡Usted ha iniciado sesión!'
-               });
-            }
          }
+
+         var validPass = await validatePassword(pass, infoWaiter.password);
+         if (!validPass) {
+            return res.status(404).json({
+               code: 404,
+               msg: 'Bad nickname or password.'
+            });
+         }
+
+         const data = infoWaiter;
+         const nick = infoWaiter.waiterName;
+         infoWaiter.genericNickName = nick;
+         const token = await encode(infoWaiter);
+         return res.status(200).json({
+            data,
+            code: 200,
+            token: token,
+            msg: 'You are logged in!'
+         });
+
+
       } catch (error) {
-         console.log('accessWaiter')
          console.log(error)
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
    updateInfoWaiter: async (req, res) => {
       try {
-         var idWaiter = {
+         const idWaiter = {
             plain: true,
             where: {
                id: req.params.id
             },
             returning: true
          };
-         var params = req.body;
-         var objWtr = {
-            firstName: params.firstName,
-            lastName: params.lastName,
-            password: await bcrypt.hash(params.password, saltRounds),
-            cellphone: params.cellphone,
-            sex: params.sex,
-            waiterImage: params.waiterImage,
-            waiterName: params.waiterName,
-            address1: params.address,
-            salary: params.salary,
-         }
-         var dataInfo = await models.Waiters.update(objWtr, idWaiter);
+         const params = req.body;
+         const pass = await hashingPassword(params.password);
+         const dataInfo = await models.Waiters.update({ ...params, password: pass }, idWaiter);
 
          if (!dataInfo) {
             return res.status(404).json({
                code: 404,
-               msg: 'No existe el mesero a modificar.'
+               msg: 'There is no server to modify.'
             });
          }
+
          return res.status(200).json({
             dataInfo,
             code: 200,
-            msg: 'Información modificada con éxito.'
+            msg: 'Information successfully modified.'
          });
+
       } catch (error) {
-         console.log('updateInfoWaiter');
          console.log(error)
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    }
-}
-
-async function toDoNewWaiter(params) {
-   var info = {
-      firstName: params.firstName,
-      lastName: params.lastName,
-      password: await bcrypt.hash(params.password, saltRounds),
-      cellphone: params.cellphone,
-      sex: params.sex,
-      waiterImage:params.waiterImage,
-      waiterName: params.waiterName,
-      address: params.address,
-      salary: params.salary,
-   };
-   return info;
 }

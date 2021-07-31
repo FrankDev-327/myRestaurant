@@ -1,13 +1,16 @@
 'use strict';
 
 const models = require('../../models');
+const { Profit } = require('../../utils/buildin_objects')
+const { setHour } = require('../../utils/dates.function');
+
 module.exports = {
    viewProfits: async (req, res) => {
       try {
          var dataInfo;
          var setWhere = {};
-         var params = req.body;
-         var _date = new Date(await setHour());
+         const params = req.body;
+         const _date = new Date(await setHour());
 
          if (params.toDay === '') {
             setWhere = {
@@ -17,7 +20,6 @@ module.exports = {
                },
                attributes: ['prices', 'orders']
             };
-            dataInfo = await models.AttendingWaiters.findAll(setWhere);
          } else {
             setWhere = {
                where: {
@@ -26,29 +28,29 @@ module.exports = {
                },
                attributes: ['prices', 'orders']
             };
-            dataInfo = await models.AttendingWaiters.findAll(setWhere);
          }
 
-         if (!dataInfo || dataInfo.length <= 0) {
+         dataInfo = await models.AttendingWaiters.findAll(setWhere);
+         if (dataInfo.length <= 0) {
             return res.status(202).json({
                code: 202,
-               msg: 'No hay pedidos cobrados bajo esa fecha.'
+               msg: 'There are no orders charged under that date.'
             });
          }
+
          var total = await Profit(dataInfo);
          return res.status(200).json({
             total: total[0],
             dataInfo,
             code: 200,
-            msg: '.Reporte sobre ingresps'
+            msg: '.Income report'
          });
 
       } catch (error) {
-         console.log('viewProfits');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    },
@@ -56,7 +58,7 @@ module.exports = {
       try {
          var dataInfo;
          var setWhere = {};
-         var params = req.body;
+         const params = req.body;
 
          if (params.toDay === '') {
             setWhere = {
@@ -64,9 +66,8 @@ module.exports = {
                   waiterId: req.params.id,
                   statusAttending: false
                },
-               attributes: ['orders', 'rates','prices']
+               attributes: ['orders', 'rates', 'prices']
             };
-            dataInfo = await models.AttendingWaiters.findAll(setWhere);
          } else {
             setWhere = {
                where: {
@@ -74,48 +75,31 @@ module.exports = {
                   dateAttending: params.toDay,
                   statusAttending: false
                },
-               attributes: ['orders', 'rates','prices']
+               attributes: ['orders', 'rates', 'prices']
             };
-            dataInfo = await models.AttendingWaiters.findAll(setWhere);
          }
 
-         if (!dataInfo || dataInfo.length <= 0) {
+         dataInfo = await models.AttendingWaiters.findAll(setWhere);
+         if (dataInfo.length <= 0) {
             return res.status(202).json({
                code: 202,
-               msg: 'No hay pedidos cobrados bajo esa fecha.'
+               msg: 'There are no orders charged under that date.'
             });
          }
          var total = await Profit(dataInfo);
          return res.status(200).json({
-            total:total[0],
+            total: total[0],
             dataInfo,
             code: 200,
-            msg: 'Reporte sobre ingresos'
+            msg: 'Income report'
          });
 
       } catch (error) {
-         console.log('soldByWaiter');
          console.log(error);
          return res.status(500).json({
             code: 500,
-            msg: 'Al parecer, el servicio no está disponible en estos momentos.'
+            msg: 'Apparently, the service is not available at the moment.'
          });
       }
    }
-}
-
-async function Profit(objecProfit) {
-   return objecProfit.map(function (value, index) {
-      var sum = 0;
-      var auxData = objecProfit[index].prices;
-      auxData.map(function (index) {
-         sum += parseFloat(index);
-      });
-      return sum;
-   });
-}
-
-async function setHour() {
-   var date = new Date();
-   return date.setHours(date.getHours() - 5);
 }
