@@ -1,5 +1,5 @@
 const set = require('../set-ups/setting');
-//
+console.log(process.env)
 module.exports = {
   "development": {
     "username": set.username,
