@@ -6,7 +6,6 @@ module.exports = {
     password: process.env._PASS_,
     database: process.env._DBNAME_,
     host: process.env._HOST_,
-    dialect: process.env._DIALECT_,
     dataurl: process.env.DATABASE_URL,
     secret: process.env._SECRETE_,
     rabbit: process.env._RABBIT_,
