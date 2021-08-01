@@ -3,7 +3,6 @@
 const express = require('express');
 const expressMetrics = require('express-metrics');
 const server = express(); //To use log out and update go out waiter.
-const expressFile = require('express-fileupload');
 const MAINPATH = process.env.MAINPATH;
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
@@ -21,9 +20,6 @@ server.use(bodyParser.urlencoded({
 
 server.use(bodyParser.json());
 server.use(morgan('dev'));
-server.use(expressFile({
-    createParentPath: true
-}));
 
 server.use(expressMetrics({
     cluster: false,
