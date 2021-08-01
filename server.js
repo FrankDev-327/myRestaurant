@@ -22,7 +22,6 @@ server.use(bodyParser.json());
 server.use(morgan('dev'));
 
 server.use(expressMetrics({
-    cluster: false,
     port: process.env._METRICS_,
 }))
 
