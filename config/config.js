@@ -1,4 +1,4 @@
-var set = require('../set-ups/setting');
+const set = require('../set-ups/setting');
 
 module.exports = {
   "development": {
