@@ -7,7 +7,7 @@ module.exports = {
     "database": set.database,
     "host": set.host,
     "dialect": "postgres",
-    //"use_env_variable": set.dataurl
+    "use_env_variable": set.dataurl
   },
 /*   "test": {
     "username": "root",
