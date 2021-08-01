@@ -6,10 +6,10 @@ module.exports = {
     "password": set.password,
     "database": set.database,
     "host": set.host,
-    "dialect": set.dialect,
-    "use_env_variable": set.dataurl
+    "dialect": "postgres",
+    //"use_env_variable": set.dataurl
   },
-  "test": {
+/*   "test": {
     "username": "root",
     "password": null,
     "database": "database_test",
@@ -22,5 +22,5 @@ module.exports = {
     "database": "database_production",
     "host": "127.0.0.1",
     "dialect": "mysql"
-  }
+  } */
 }
