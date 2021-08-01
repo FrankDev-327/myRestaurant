@@ -8,7 +8,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 //const metrics = process.env._METRICS_;
-
+//
 server.use(cors({
     credentials: true
 }));
@@ -20,7 +20,7 @@ server.use(bodyParser.urlencoded({
 
 server.use(bodyParser.json());
 server.use(morgan('dev'));
-
+console.log('********', process.env._METRICS_)
 server.use(expressMetrics({
     port: process.env._METRICS_,
 }))
