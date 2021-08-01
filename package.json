@@ -16,7 +16,7 @@
   },
   "homepage": "https://github.com/Poliedro2000/myRestaurant.git#readme",
   "dependencies": {
-    "amqplib": "^0.5.5",
+    "amqplib": "^0.8.0",
     "bcrypt": ">=5.0.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
