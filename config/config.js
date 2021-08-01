@@ -2,10 +2,10 @@ const set = require('../set-ups/setting');
 
 module.exports = {
   "development": {
-    "username": set.username,
-    "password": set.password,
-    "database": set.database,
-    "host": set.host,
+    "username": process.env._USER_,
+    "password": process.env._PASS_,
+    "database": process.env._DBNAME_,
+    "host": process.env._HOST_,
     "dialect": "postgres",
     "use_env_variable": set.dataurl
   },
