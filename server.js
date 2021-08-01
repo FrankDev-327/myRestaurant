@@ -7,12 +7,20 @@ const MAINPATH = process.env.MAINPATH;
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const {
+    rWaiter,
+    rMenu,
+    rCategory,
+    rTable,
+    rAttend,
+    rReprot,
+    rAdmin
+} = require('./routes/index');
 //const metrics = process.env._METRICS_;
 //
 server.use(cors({
     credentials: true
 }));
-server.set('port', process.env._PORT_);
 server.disable('x-powered-by');
 server.use(bodyParser.urlencoded({
     extended: false
@@ -23,16 +31,6 @@ server.use(morgan('dev'));
 server.use(expressMetrics({
     port: process.env._METRICS_,
 }))
-
-const {
-    rWaiter,
-    rMenu,
-    rCategory,
-    rTable,
-    rAttend,
-    rReprot,
-    rAdmin
-} = require('./routes/index');
 
 /* It must be improved*/
 server.use((req, res, next) => {
