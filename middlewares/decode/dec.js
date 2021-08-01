@@ -3,7 +3,6 @@
 const moment = require('moment');
 const models = require('../../models');
 const jwt = require('jwt-simple');
-const models = require('../../models');
 const objConf = require('../../set-ups/setting');
 
 exports.authMethod = async (req, res, next) => {
