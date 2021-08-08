@@ -1,5 +1,5 @@
 'use strict';
-//
+////
 const models = require('../../models');
 const { sendQueue } = require('../../utils/sending_queues');
 const { buildCreateAttending } = require('../../utils/buildin_objects')
