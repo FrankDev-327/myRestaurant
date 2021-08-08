@@ -1,6 +1,0 @@
-Para los próximos cambios, crear:
-
-#1: Logearse con cuenta de Google, Twitter o Facebook
-#2: Evaluar los distintos tipo de reportes posibles
-#3: Crearle un Swagger
-#4: Investigar como integrarse a pagos con tarjeta

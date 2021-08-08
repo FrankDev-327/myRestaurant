@@ -5,12 +5,13 @@ module.exports = {
     sendQueue: async (objData) => {
         amq.connect(set.rabbit, function (err, conn) {
             if (err != null) {
-                bail(err);
+                console.log(err)
+                return 
             }
             conn.createChannel(function (err, channel) {
                 if (err != null) {
                     console.error(err);
-                    process.exit(1);
+                    return ;
                 }
                 objData = JSON.stringify(objData);
                 channel.assertQueue(set.memorydb);
